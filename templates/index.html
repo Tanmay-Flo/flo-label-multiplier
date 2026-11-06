@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Flo Label Multiplier</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --brand: #044CAB;
+      --brand-dark: #033a84;
+      --brand-light: #e8f0fb;
+      --text: #1b2433;
+      --muted: #6b7686;
+      --border: #dbe3ee;
+      --bg: #f4f7fb;
+      --success: #138a52;
+      --success-bg: #e7f6ee;
+      --error: #c0392b;
+      --error-bg: #fdecea;
+      --radius: 16px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      color: var(--text);
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 10% 0%, #dce8fa 0%, transparent 45%),
+        radial-gradient(circle at 100% 100%, #e3ecf9 0%, transparent 40%),
+        var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 16px 32px;
+    }
+
+    header { text-align: center; margin-bottom: 32px; }
+
+    .logo-badge {
+      width: 56px; height: 56px;
+      border-radius: 14px;
+      background: var(--brand);
+      display: inline-flex; align-items: center; justify-content: center;
+      box-shadow: 0 8px 20px rgba(4, 76, 171, 0.3);
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      color: #044CAB;
+      font-weight: 800;
+      text-transform: uppercase;
+      font-size: clamp(1.6rem, 4vw, 2.3rem);
+      letter-spacing: 0.06em;
+    }
+
+    .subtitle { color: var(--muted); margin-top: 8px; font-size: 0.98rem; }
+
+    .card {
+      background: #fff;
+      width: 100%;
+      max-width: 560px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: 0 20px 50px rgba(16, 38, 77, 0.08);
+      padding: 32px;
+    }
+
+    .step-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--brand);
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    /* ---------- Drop zone ---------- */
+        .dropzone {
+      display: block;
+      width: 100%;
+      border: 2px dashed var(--border);
+      border-radius: 14px;
+      padding: 36px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: #fafcff;
+    }
+    .dropzone:hover, .dropzone.dragover {
+      border-color: var(--brand);
+      background: var(--brand-light);
+    }
+    .dropzone svg { display: block; margin: 0 auto 10px; color: var(--brand); }
+    .dropzone .dz-title { font-weight: 600; }
+    .dropzone .dz-title span { color: var(--brand); text-decoration: underline; }
+    .dropzone .dz-hint { color: var(--muted); font-size: 0.85rem; margin-top: 4px; }
+    #fileInput { display: none; }
+
+    .file-chip {
+      display: none;
+      align-items: center;
+      gap: 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      background: #fafcff;
+    }
+    .file-chip.show { display: flex; }
+    .file-icon {
+      flex-shrink: 0;
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      background: #fde8e6;
+      color: #d93025;
+      font-weight: 800;
+      font-size: 0.7rem;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .file-meta { flex: 1; min-width: 0; }
+    .file-name { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .file-size { color: var(--muted); font-size: 0.82rem; }
+    .remove-btn {
+      border: none; background: none; cursor: pointer;
+      color: var(--muted); font-size: 1.3rem; line-height: 1;
+      padding: 4px 8px; border-radius: 8px;
+    }
+    .remove-btn:hover { background: #eef2f7; color: var(--error); }
+
+    /* ---------- Qty ---------- */
+    .section { margin-top: 28px; }
+
+    .qty-row { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+    .stepper {
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .stepper button {
+      width: 48px; height: 48px;
+      border: none; background: #f3f6fa;
+      font-size: 1.4rem; font-weight: 600; color: var(--brand);
+      cursor: pointer; transition: background 0.15s;
+    }
+    .stepper button:hover { background: var(--brand-light); }
+    .stepper input {
+      width: 72px; height: 48px;
+      border: none;
+      border-left: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      text-align: center;
+      font-size: 1.15rem; font-weight: 700;
+      font-family: inherit; color: var(--text);
+      -moz-appearance: textfield;
+    }
+    .stepper input::-webkit-outer-spin-button,
+    .stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .stepper input:focus { outline: none; background: var(--brand-light); }
+    .qty-help { color: var(--muted); font-size: 0.88rem; }
+
+    .preview {
+      margin-top: 16px;
+      padding: 14px;
+      background: var(--brand-light);
+      border-radius: 12px;
+      font-size: 0.85rem;
+    }
+    .preview-title { font-weight: 600; color: var(--brand-dark); margin-bottom: 8px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chip {
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #fff;
+      border: 1px solid #c7d8f1;
+      font-weight: 600;
+      font-size: 0.78rem;
+      color: var(--brand-dark);
+    }
+    .chip.more { background: transparent; border: none; color: var(--muted); }
+
+    /* ---------- Button ---------- */
+    .submit-btn {
+      margin-top: 28px;
+      width: 100%;
+      height: 54px;
+      border: none;
+      border-radius: 12px;
+      background: var(--brand);
+      color: #fff;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      box-shadow: 0 10px 24px rgba(4, 76, 171, 0.28);
+      transition: transform 0.1s, background 0.2s, box-shadow 0.2s;
+    }
+    .submit-btn:hover:not(:disabled) { background: var(--brand-dark); }
+    .submit-btn:active:not(:disabled) { transform: translateY(1px); }
+    .submit-btn:disabled { background: #9db3d3; box-shadow: none; cursor: not-allowed; }
+
+    .spinner {
+      width: 20px; height: 20px;
+      border: 3px solid rgba(255,255,255,0.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: none;
+    }
+    .loading .spinner { display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ---------- Alerts ---------- */
+    .alert {
+      display: none;
+      margin-top: 20px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      font-size: 0.92rem;
+    }
+    .alert.show { display: block; }
+    .alert.error { background: var(--error-bg); color: var(--error); font-weight: 500; }
+    .alert.success { background: var(--success-bg); color: var(--success); }
+    .alert.success strong { display: block; font-size: 1rem; margin-bottom: 4px; }
+    .stats { display: flex; gap: 10px; margin-top: 12px; align-items: center; flex-wrap: wrap; }
+    .stat {
+      background: #fff;
+      border-radius: 10px;
+      padding: 8px 14px;
+      text-align: center;
+      color: var(--text);
+    }
+    .stat b { display: block; font-size: 1.3rem; color: var(--brand); }
+    .stat small { color: var(--muted); font-size: 0.75rem; }
+    .arrow { font-size: 1.3rem; color: var(--muted); }
+    .again-link {
+      display: inline-block;
+      margin-top: 12px;
+      color: var(--success);
+      font-weight: 600;
+    }
+
+    footer { margin-top: 28px; color: var(--muted); font-size: 0.8rem; text-align: center; }
+
+    @media (max-width: 480px) {
+      body { padding-top: 28px; }
+      .card { padding: 22px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo-badge">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="8" y="8" width="13" height="13" rx="2"></rect>
+        <path d="M4 16V5a2 2 0 0 1 2-2h11"></path>
+      </svg>
+    </div>
+    <h1>Flo Label Multiplier</h1>
+    <p class="subtitle">Duplicate every shipping label in your PDF, in order, in one click.</p>
+  </header>
+
+  <main class="card">
+    <form id="labelForm" novalidate>
+      <!-- Step 1: Upload -->
+      <span class="step-label">Step 1 · Upload label PDF</span>
+
+      <label class="dropzone" id="dropzone" for="fileInput">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+          <polyline points="17 8 12 3 7 8"></polyline>
+          <line x1="12" y1="3" x2="12" y2="15"></line>
+        </svg>
+        <div class="dz-title">Drag &amp; drop your PDF here or <span>browse</span></div>
+        <div class="dz-hint">One shipping label per page · Max {{ max_mb }} MB</div>
+      </label>
+      <input type="file" id="fileInput" accept="application/pdf,.pdf" />
+
+      <div class="file-chip" id="fileChip">
+        <div class="file-icon">PDF</div>
+        <div class="file-meta">
+          <div class="file-name" id="fileName"></div>
+          <div class="file-size" id="fileSize"></div>
+        </div>
+        <button type="button" class="remove-btn" id="removeBtn" title="Remove file">&times;</button>
+      </div>
+
+      <!-- Step 2: Qty -->
+      <div class="section">
+        <span class="step-label">Step 2 · Qty per label</span>
+        <div class="qty-row">
+          <div class="stepper">
+            <button type="button" id="minusBtn" aria-label="Decrease">&minus;</button>
+            <input type="number" id="qtyInput" value="2" min="1" max="{{ max_qty }}" inputmode="numeric" />
+            <button type="button" id="plusBtn" aria-label="Increase">+</button>
+          </div>
+          <div class="qty-help">Copies of each label (1–{{ max_qty }})</div>
+        </div>
+
+        <div class="preview">
+          <div class="preview-title">Output page order</div>
+          <div class="chips" id="previewChips"></div>
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <button type="submit" class="submit-btn" id="submitBtn" disabled>
+        <span class="spinner"></span>
+        <span id="btnText">Generate &amp; Download</span>
+      </button>
+
+      <div class="alert error" id="errorBox"></div>
+      <div class="alert success" id="successBox"></div>
+    </form>
+  </main>
+
+  <footer>&copy; <span id="year"></span> Flo Mattress · Files are processed in memory and never stored.</footer>
+
+  <script>
+    const MAX_QTY = {{ max_qty }};
+    const MAX_MB = {{ max_mb }};
+
+    const dropzone   = document.getElementById("dropzone");
+    const fileInput  = document.getElementById("fileInput");
+    const fileChip   = document.getElementById("fileChip");
+    const fileName   = document.getElementById("fileName");
+    const fileSize   = document.getElementById("fileSize");
+    const removeBtn  = document.getElementById("removeBtn");
+    const qtyInput   = document.getElementById("qtyInput");
+    const minusBtn   = document.getElementById("minusBtn");
+    const plusBtn    = document.getElementById("plusBtn");
+    const chips      = document.getElementById("previewChips");
+    const submitBtn  = document.getElementById("submitBtn");
+    const btnText    = document.getElementById("btnText");
+    const errorBox   = document.getElementById("errorBox");
+    const successBox = document.getElementById("successBox");
+    const form       = document.getElementById("labelForm");
+
+    document.getElementById("year").textContent = new Date().getFullYear();
+
+    let selectedFile = null;
+    let lastUrl = null;
+
+    // ---------- Helpers ----------
+    function formatBytes(bytes) {
+      if (bytes < 1024) return bytes + " B";
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+      return (bytes / (1024 * 1024)).toFixed(2) + " MB";
+    }
+
+    function showError(msg) {
+      errorBox.textContent = msg;
+      errorBox.classList.add("show");
+      successBox.classList.remove("show");
+    }
+
+    function clearAlerts() {
+      errorBox.classList.remove("show");
+      successBox.classList.remove("show");
+    }
+
+    function getQty() {
+      const v = parseInt(qtyInput.value, 10);
+      return isNaN(v) ? 0 : v;
+    }
+
+    function updateState() {
+      const qty = getQty();
+      submitBtn.disabled = !(selectedFile && qty >= 1 && qty <= MAX_QTY);
+      renderPreview(qty);
+    }
+
+    function renderPreview(qty) {
+      chips.innerHTML = "";
+      if (qty < 1 || qty > MAX_QTY) {
+        chips.innerHTML = '<span class="chip more">Enter a qty between 1 and ' + MAX_QTY + "</span>";
+        return;
+      }
+      const shown = Math.min(qty, 3);
+      for (let label = 1; label <= 3; label++) {
+        for (let i = 0; i < shown; i++) {
+          const c = document.createElement("span");
+          c.className = "chip";
+          c.textContent = "Label " + label;
+          chips.appendChild(c);
+        }
+        if (qty > 3) {
+          const m = document.createElement("span");
+          m.className = "chip more";
+          m.textContent = "…×" + qty;
+          chips.appendChild(m);
+        }
+      }
+      const end = document.createElement("span");
+      end.className = "chip more";
+      end.textContent = "and so on";
+      chips.appendChild(end);
+    }
+
+    function setFile(file) {
+      clearAlerts();
+      if (!file) return;
+      const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+      if (!isPdf) { showError("Please upload a PDF file."); return; }
+      if (file.size > MAX_MB * 1024 * 1024) { showError("File is larger than " + MAX_MB + " MB."); return; }
+
+      selectedFile = file;
+      fileName.textContent = file.name;
+      fileSize.textContent = formatBytes(file.size);
+      fileChip.classList.add("show");
+      dropzone.style.display = "none";
+      updateState();
+    }
+
+    function resetFile() {
+      selectedFile = null;
+      fileInput.value = "";
+      fileChip.classList.remove("show");
+      dropzone.style.display = "block";
+      clearAlerts();
+      updateState();
+    }
+
+    // ---------- File events ----------
+    fileInput.addEventListener("change", (e) => setFile(e.target.files[0]));
+    removeBtn.addEventListener("click", resetFile);
+
+    ["dragenter", "dragover"].forEach((evt) =>
+      dropzone.addEventListener(evt, (e) => { e.preventDefault(); dropzone.classList.add("dragover"); })
+    );
+    ["dragleave", "drop"].forEach((evt) =>
+      dropzone.addEventListener(evt, (e) => { e.preventDefault(); dropzone.classList.remove("dragover"); })
+    );
+    dropzone.addEventListener("drop", (e) => setFile(e.dataTransfer.files[0]));
+
+    // ---------- Qty events ----------
+    minusBtn.addEventListener("click", () => {
+      qtyInput.value = Math.max(1, getQty() - 1);
+      updateState();
+    });
+    plusBtn.addEventListener("click", () => {
+      qtyInput.value = Math.min(MAX_QTY, Math.max(1, getQty() + 1));
+      updateState();
+    });
+    qtyInput.addEventListener("input", updateState);
+    qtyInput.addEventListener("blur", () => {
+      let q = getQty();
+      if (q < 1) q = 1;
+      if (q > MAX_QTY) q = MAX_QTY;
+      qtyInput.value = q;
+      updateState();
+    });
+
+    // ---------- Submit ----------
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!selectedFile) return;
+      clearAlerts();
+
+      const qty = getQty();
+      const data = new FormData();
+      data.append("pdf", selectedFile);
+      data.append("qty", qty);
+
+      submitBtn.disabled = true;
+      submitBtn.classList.add("loading");
+      btnText.textContent = "Processing…";
+
+      try {
+        const res = await fetch("/process", { method: "POST", body: data });
+
+        if (!res.ok) {
+          let msg = "Something went wrong. Please try again.";
+          try { msg = (await res.json()).error || msg; } catch (_) {}
+          throw new Error(msg);
+        }
+
+        const blob = await res.blob();
+        const original = res.headers.get("X-Original-Pages");
+        const output   = res.headers.get("X-Output-Pages");
+        const outName  = res.headers.get("X-Filename") || "labels.pdf";
+
+        if (lastUrl) URL.revokeObjectURL(lastUrl);
+        lastUrl = URL.createObjectURL(blob);
+
+        // Trigger download
+        const a = document.createElement("a");
+        a.href = lastUrl;
+        a.download = outName;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+
+        successBox.innerHTML =
+          "<strong>Done! Your PDF has been downloaded.</strong>" +
+          "Each label was repeated " + qty + "× in sequence." +
+          '<div class="stats">' +
+            '<div class="stat"><b>' + original + "</b><small>Original pages</small></div>" +
+            '<span class="arrow">&rarr;</span>' +
+            '<div class="stat"><b>' + output + "</b><small>Output pages</small></div>" +
+          "</div>" +
+          '<a class="again-link" href="' + lastUrl + '" download="' + outName + '">Download again</a>';
+        successBox.classList.add("show");
+      } catch (err) {
+        showError(err.message);
+      } finally {
+        submitBtn.classList.remove("loading");
+        btnText.textContent = "Generate & Download";
+        updateState();
+      }
+    });
+
+    updateState();
+  </script>
+</body>
+</html>
